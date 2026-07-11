@@ -1,0 +1,5 @@
+# Fire-Sale Watch — Python dependencies
+# Install into a virtualenv:  pip install -r requirements.txt
+yfinance>=1.4.1
+pandas>=3.0.0
+PyYAML>=6.0

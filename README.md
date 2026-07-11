@@ -4,6 +4,35 @@ A local dashboard that flags big index funds, ETFs, and mutual funds trading at 
 deep discount from their highs — Buffett's *"be greedy when others are fearful"* moment.
 A cron job refreshes it automatically; you open it anytime.
 
+## Setup from scratch
+
+You only need this the first time (or on a new machine). Requires **Python 3.10+**.
+
+```bash
+# 1. Get the code
+git clone https://github.com/goatvram/index_fund_watch_dashboard.git
+cd index_fund_watch_dashboard
+
+# 2. Create an isolated Python environment
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Build the dashboard for the first time
+./update.sh
+
+# 5. Open it
+./open.sh
+```
+
+That's it — `dashboard.html` is now generated and openable. To keep it fresh
+automatically, install the cron job (see **The automatic update** below).
+
+> **WSL / Windows note:** `open.sh` launches Chrome on Windows from WSL. On macOS
+> or Linux, just open `dashboard.html` directly in any browser.
+
 ## Open the dashboard
 ```bash
 ./open.sh
@@ -45,8 +74,18 @@ To change the schedule, edit the time in `setup_cron.sh` and re-run it.
 | `update.sh` | Runs one refresh (used by cron) |
 | `setup_cron.sh` | Installs the daily schedule |
 | `open.sh` | Opens the dashboard in your browser |
-| `data.json` | Latest computed data (generated) |
-| `.venv/` | Python environment with yfinance |
+| `requirements.txt` | Python dependencies (`pip install -r`) |
+| `data.json` | Latest computed data (generated, git-ignored) |
+| `dashboard.html` | The rendered dashboard (generated, git-ignored) |
+| `.venv/` | Python environment with yfinance (git-ignored) |
+
+## Contributing
+
+Contributions are welcome — adding tickers, improving the dashboard, or fixing
+bugs. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the dev setup, workflow, and
+conventions. In short: fork, branch off `main`, run `./update.sh` to test your
+change end-to-end, then open a pull request. Generated files (`data.json`,
+`dashboard.html`, logs) are git-ignored — don't commit them.
 
 ## Notes
 - Data source: Yahoo Finance via the `yfinance` library. Free, no API key.
