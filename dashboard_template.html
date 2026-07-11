@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fire-Sale Watch</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#171d26; --panel2:#1f2733; --ink:#e7edf3;
+    --muted:#8b97a7; --line:#2a3340; --green:#27c281; --greenbg:#11311f;
+    --amber:#e3b341; --red:#ef6c6c; --accent:#4aa8ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px}
+  header h1{margin:0 0 2px;font-size:26px;letter-spacing:.3px}
+  .quote{color:var(--muted);font-style:italic;margin:0 0 18px}
+  .quote b{color:var(--green);font-style:normal}
+  .cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:14px 18px;min-width:150px}
+  .card .n{font-size:28px;font-weight:700}
+  .card .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .card.hot .n{color:var(--green)}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin-bottom:18px;display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+  .ctl label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:.4px}
+  .ctl .val{color:var(--accent);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--green)}
+  .toggle{display:inline-flex;background:var(--panel2);border-radius:8px;overflow:hidden;
+    border:1px solid var(--line)}
+  .toggle button{background:none;border:0;color:var(--muted);padding:7px 14px;
+    cursor:pointer;font-size:13px}
+  .toggle button.on{background:var(--green);color:#06210f;font-weight:700}
+  .search input{width:100%;background:var(--panel2);border:1px solid var(--line);
+    color:var(--ink);border-radius:8px;padding:8px 10px}
+  table{width:100%;border-collapse:collapse;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);
+    white-space:nowrap}
+  th{position:sticky;top:0;background:var(--panel2);color:var(--muted);
+    font-size:12px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;
+    user-select:none}
+  th:first-child,td:first-child,th.l,td.l{text-align:left}
+  tr.flag td{background:var(--greenbg)}
+  tr.flag td:first-child{box-shadow:inset 3px 0 0 var(--green)}
+  .tkr{font-weight:700}
+  .name{color:var(--muted);font-size:12.5px;white-space:normal}
+  .sector{color:var(--ink);font-size:12.5px;white-space:normal;max-width:150px}
+  .dd-deep{color:var(--green);font-weight:700}
+  .dd-mid{color:var(--amber)}
+  .dd-shallow{color:var(--muted)}
+  .trio{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+  .trio .v{display:inline-block;text-align:right}
+  .trio.cagr .v{width:3.3em}
+  .trio.growth .v{width:3.6em}
+  .trio .sep{display:inline-block;width:.8em;text-align:center;color:var(--line)}
+  .pos{color:var(--green)} .neg{color:var(--red)}
+  th .sub{display:block;color:var(--line);font-size:10px;font-weight:400;
+    letter-spacing:.3px;margin-top:2px}
+  .badge{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:20px;
+    background:var(--green);color:#06210f;font-weight:700;margin-left:8px}
+  .foot{color:var(--muted);font-size:12.5px;margin-top:16px;line-height:1.7}
+  .foot code{background:var(--panel2);padding:1px 6px;border-radius:5px;color:var(--ink)}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🔥 Fire-Sale Watch</h1>
+    <p class="quote">"Be fearful when others are greedy, and <b>greedy when others are fearful.</b>" — Warren Buffett</p>
+  </header>
+
+  <div class="cards">
+    <div class="card hot"><div class="n" id="c-flagged">–</div><div class="l">On fire sale</div></div>
+    <div class="card"><div class="n" id="c-total">–</div><div class="l">Funds watched</div></div>
+    <div class="card"><div class="n" id="c-deepest">–</div><div class="l">Deepest discount</div></div>
+    <div class="card"><div class="n" id="c-asof" style="font-size:16px;padding-top:8px">–</div><div class="l">Last cron run</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctl">
+      <label>Show</label>
+      <div class="toggle" id="view">
+        <button data-view="all">All funds</button>
+        <button data-view="fire">Only fire sale</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Discount measured from</label>
+      <div class="toggle" id="ref">
+        <button data-ref="52w">52-week high</button>
+        <button data-ref="ath">All-time high</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Fire-sale band from: <span class="val" id="minv"></span></label>
+      <input type="range" id="min" min="0" max="100" step="5">
+    </div>
+    <div class="ctl">
+      <label>Fire-sale band to: <span class="val" id="maxv"></span></label>
+      <input type="range" id="max" min="0" max="100" step="5">
+    </div>
+    <div class="ctl search">
+      <label>Search</label>
+      <input type="text" id="q" placeholder="ticker or name...">
+    </div>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th class="l" data-k="ticker">Fund</th>
+        <th data-k="type">Type</th>
+        <th class="l" data-k="industry">Industry</th>
+        <th data-k="last">Last</th>
+        <th data-k="ref_high">Peak</th>
+        <th data-k="dd" id="ddhead">Discount ▼</th>
+        <th data-k="cagr">CAGR<span class="sub">1y · 3y · 5y · 10y</span></th>
+        <th data-k="growth">100K Growth<span class="sub">1y · 3y · 5y · 10y</span></th>
+        <th data-k="assets_usd">Size (AUM)</th>
+        <th data-k="as_of">As of</th>
+      </tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none">No funds match these criteria right now. Markets may be calm — patience is a position.</div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const state = {
+  ref: (DATA.criteria.reference_high || "52w"),
+  min: Number(DATA.criteria.min_drawdown_pct ?? 40),
+  max: Number(DATA.criteria.max_drawdown_pct ?? 100),
+  minAssets: Number(DATA.criteria.min_assets_usd ?? 0),
+  view: "all",        // "all" = show every tracked fund; "fire" = only the fire-sale band
+  q: "",
+  sortK: "dd",
+  sortDir: 1, // 1 = deepest discount first
+};
+
+const funds = DATA.funds.filter(f => f.ok);
+
+function money(v){
+  if(v==null) return "—";
+  if(v>=1e12) return "$"+(v/1e12).toFixed(2)+"T";
+  if(v>=1e9)  return "$"+(v/1e9).toFixed(1)+"B";
+  if(v>=1e6)  return "$"+(v/1e6).toFixed(0)+"M";
+  return "$"+v.toFixed(0);
+}
+function ddOf(f){ return state.ref==="ath" ? f.drawdown_ath : f.drawdown_52w; }
+function refHighOf(f){ return state.ref==="ath" ? f.high_ath : f.high_52w; }
+function ddClass(d){ const a=Math.abs(d); return a>=40?"dd-deep":a>=20?"dd-mid":"dd-shallow"; }
+
+const HORIZONS = ["1","3","5","10"];
+// $100K grown over `years` → compact "$162K" / "$1.21M"
+function grow(v){
+  if(v==null) return "—";
+  if(v>=1e6) return "$"+(v/1e6).toFixed(2)+"M";
+  return "$"+Math.round(v/1000)+"K";
+}
+// One cell holding the 5y/10y/15y trio. Each value sits in a fixed-width,
+// right-aligned slot so the figures line up vertically down the column.
+function trio(obj, fmt, cls){
+  return `<span class="trio ${cls}">`+HORIZONS.map(y=>{
+    const v = obj ? obj[y] : null;
+    const inner = v==null ? '<span class="dd-shallow">—</span>' : fmt(v);
+    return `<span class="v">${inner}</span>`;
+  }).join('<span class="sep">·</span>')+'</span>';
+}
+function cagrCell(v){ return `<span class="${v>=0?'pos':'neg'}">${v.toFixed(1)}%</span>`; }
+// sort key for the trio columns: prefer the 5y figure, fall back to 10y/15y
+function firstNum(obj){
+  if(!obj) return null;
+  for(const y of HORIZONS){ if(obj[y]!=null) return obj[y]; }
+  return null;
+}
+
+function rows(){
+  let r = funds.map(f => ({
+    f, dd: ddOf(f), ref_high: refHighOf(f),
+  }));
+  const q = state.q.trim().toLowerCase();
+  if(q) r = r.filter(x => x.f.ticker.toLowerCase().includes(q) || (x.f.name||"").toLowerCase().includes(q));
+  // In "fire" view, narrow to the fire-sale band (and size). In "all" view, keep
+  // every tracked fund visible — the band only controls highlighting.
+  if(state.view === "fire"){
+    if(state.minAssets>0) r = r.filter(x => x.f.assets_usd==null || x.f.assets_usd>=state.minAssets);
+    r = r.filter(x => inBand(x.dd));
+  }
+  const k = state.sortK, dir = state.sortDir;
+  r.sort((a,b)=>{
+    let av,bv;
+    if(k==="dd"){ av=a.dd; bv=b.dd; }          // more negative = deeper
+    else if(k==="ticker"){ av=a.f.ticker; bv=b.f.ticker; }
+    else if(k==="type"){ av=a.f.type||""; bv=b.f.type||""; }
+    else if(k==="ref_high"){ av=a.ref_high; bv=b.ref_high; }
+    else if(k==="cagr"){ av=firstNum(a.f.cagr); bv=firstNum(b.f.cagr); if(av==null)av=-Infinity; if(bv==null)bv=-Infinity; }
+    else if(k==="growth"){ av=firstNum(a.f.growth_100k); bv=firstNum(b.f.growth_100k); if(av==null)av=-Infinity; if(bv==null)bv=-Infinity; }
+    else if(k==="as_of"){ av=a.f.as_of; bv=b.f.as_of; }
+    else { av=a.f[k]; bv=b.f[k]; if(av==null)av=-Infinity; if(bv==null)bv=-Infinity; }
+    if(typeof av==="string") return dir*av.localeCompare(bv);
+    return dir*(av-bv);
+  });
+  return r;
+}
+
+function inBand(dd){ return (-dd) >= state.min && (-dd) <= state.max; }
+
+function render(){
+  // sliders/labels
+  document.getElementById("min").value = state.min;
+  document.getElementById("max").value = state.max;
+  document.getElementById("minv").textContent = state.min+"%";
+  document.getElementById("maxv").textContent = state.max>=100? "any" : state.max+"%";
+  document.getElementById("q").value = state.q;
+  [...document.querySelectorAll("#ref button")].forEach(b=>b.classList.toggle("on", b.dataset.ref===state.ref));
+  [...document.querySelectorAll("#view button")].forEach(b=>b.classList.toggle("on", b.dataset.view===state.view));
+  document.getElementById("ddhead").textContent =
+    "Discount vs "+(state.ref==="ath"?"ATH":"52w")+" "+(state.sortDir<0?"▲":"▼");
+
+  const r = rows();
+  const body = document.getElementById("body");
+  body.innerHTML = "";
+  for(const x of r){
+    const f=x.f, flag=inBand(x.dd);
+    const tr=document.createElement("tr");
+    if(flag) tr.className="flag";
+    tr.innerHTML =
+      `<td class="l"><span class="tkr">${f.ticker}</span>${flag?'<span class="badge">GREEDY</span>':''}`+
+        `<div class="name">${f.name||""}</div></td>`+
+      `<td>${(f.type||"").replace("ETF","ETF").replace("MUTUALFUND","Fund")||"—"}</td>`+
+      `<td class="l sector">${f.industry||"—"}</td>`+
+      `<td>${f.last.toLocaleString(undefined,{style:"currency",currency:"USD"})}</td>`+
+      `<td>${x.ref_high.toLocaleString(undefined,{style:"currency",currency:"USD"})}</td>`+
+      `<td class="${ddClass(x.dd)}">${x.dd.toFixed(1)}%</td>`+
+      `<td>${trio(f.cagr, cagrCell, "cagr")}</td>`+
+      `<td>${trio(f.growth_100k, grow, "growth")}</td>`+
+      `<td>${money(f.assets_usd)}</td>`+
+      `<td>${f.as_of}</td>`;
+    body.appendChild(tr);
+  }
+  document.getElementById("empty").style.display = r.length?"none":"block";
+
+  // cards
+  const flagged = funds.filter(f=>inBand(ddOf(f)));
+  document.getElementById("c-flagged").textContent = flagged.length;
+  document.getElementById("c-total").textContent = funds.length;
+  const deepest = funds.reduce((m,f)=> ddOf(f)<ddOf(m)?f:m, funds[0]);
+  document.getElementById("c-deepest").textContent = deepest? ddOf(deepest).toFixed(0)+"% "+deepest.ticker : "—";
+  // "Last cron run" = when the fetcher/cron actually generated this data (date + time).
+  // Per-row "As of" separately shows each fund's market-close date.
+  document.getElementById("c-asof").textContent = (DATA.generated_at || "—").slice(0,16);
+}
+
+// wire up controls
+document.getElementById("min").oninput = e=>{ state.min=+e.target.value; if(state.min>state.max)state.max=state.min; render(); };
+document.getElementById("max").oninput = e=>{ state.max=+e.target.value; if(state.max<state.min)state.min=state.max; render(); };
+document.getElementById("q").oninput = e=>{ state.q=e.target.value; render(); };
+[...document.querySelectorAll("#ref button")].forEach(b=> b.onclick=()=>{ state.ref=b.dataset.ref; render(); });
+[...document.querySelectorAll("#view button")].forEach(b=> b.onclick=()=>{ state.view=b.dataset.view; render(); });
+[...document.querySelectorAll("th")].forEach(th=> th.onclick=()=>{
+  const k=th.dataset.k;
+  if(state.sortK===k) state.sortDir*=-1; else { state.sortK=k; state.sortDir = (k==="dd")?1:-1; }
+  render();
+});
+
+const failed = DATA.funds.filter(f=>!f.ok).map(f=>f.ticker);
+document.getElementById("foot").innerHTML =
+  `Generated <b>${DATA.generated_at}</b> from your <code>config.yaml</code> (${DATA.count_ok}/${DATA.count_total} funds loaded`+
+  (failed.length? `; no data for: ${failed.join(", ")}`:``)+`). `+
+  `All tracked funds are listed, deepest discount first. Green <b>GREEDY</b> rows fall inside your saved fire-sale band `+
+  `(${state.min}%–${state.max>=100?'any':state.max+'%'} from the ${state.ref==='ath'?'all-time':'52-week'} high). `+
+  `Use "Only fire sale" to hide the rest; sliders re-shape the band live. To change what the cron job saves, edit `+
+  `<code>config.yaml</code>. Data: Yahoo Finance via yfinance. Educational use — not investment advice.`;
+
+render();
+</script>
+</body>
+</html>

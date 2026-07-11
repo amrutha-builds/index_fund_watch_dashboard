@@ -1,0 +1,83 @@
+# =====================================================================
+#  FIRE-SALE WATCH  —  your criteria
+#  "Be fearful when others are greedy, greedy when others are fearful."
+#                                                        — Warren Buffett
+# ---------------------------------------------------------------------
+#  Edit this file anytime. The cron job reads it fresh on every run,
+#  so changes are picked up automatically on the next update.
+#  After editing, you can also run ./update.sh to refresh right away.
+# =====================================================================
+
+criteria:
+  # Measure the discount from which peak?
+  #   "52w" = 52-week high   (recent fire sale — Buffett's "be greedy" moment)
+  #   "ath" = all-time high  (deeper, longer-term discount)
+  reference_high: "52w"
+
+  # The "fire sale" band. A fund is FLAGGED (highlighted green = greedy zone)
+  # when its drop from the chosen peak is within this band.
+  # Example: 40 to 60 means "down between 40% and 60%".
+  min_drawdown_pct: 40        # at least this far down
+  max_drawdown_pct: 100       # up to this far down (100 = no upper limit)
+
+  # Only consider "big" funds. Best-effort assets-under-management filter
+  # in US dollars. Set to 0 to ignore size. (1e9 = 1 billion)
+  min_assets_usd: 1000000000  # $1B
+
+# ---------------------------------------------------------------------
+#  The funds you want to watch (the cron job fetches these).
+#  Add or remove tickers freely. Use US-listed symbols.
+#  Mutual funds use their share-class ticker (e.g. VFIAX, FXAIX).
+# ---------------------------------------------------------------------
+universe:
+  # --- Broad market index ETFs ---
+  - SPY      # S&P 500
+  - VOO      # S&P 500 (Vanguard)
+  - IVV      # S&P 500 (iShares)
+  - VTI      # Total US market
+  - QQQ      # Nasdaq 100
+  - DIA      # Dow Jones 30
+  - IWM      # Russell 2000 (small caps)
+  - VEU      # All-world ex-US
+  - VWO      # Emerging markets
+  - EFA      # Developed markets ex-US
+
+  # --- Sector SPDRs (one sector can be on fire sale while market is calm) ---
+  - XLE      # Energy
+  - XLF      # Financials
+  - XLK      # Technology
+  - XLV      # Health Care
+  - XLI      # Industrials
+  - XLP      # Consumer Staples
+  - XLY      # Consumer Discretionary
+  - XLU      # Utilities
+  - XLB      # Materials
+  - XLRE     # Real Estate
+  - XLC      # Communication Services
+
+  # --- Thematic / higher-volatility (more likely to hit a deep discount) ---
+  - ARKK     # ARK Innovation
+  - SMH      # Semiconductors
+  - SOXX     # Semiconductors (iShares)
+  - IBB      # Biotech
+  - KRE      # Regional banks
+  - TAN      # Solar
+  - ICLN     # Clean energy
+  - LIT      # Lithium / battery
+  - KWEB     # China internet
+  - FXI      # China large-cap
+  - EWZ      # Brazil
+  - GDX      # Gold miners
+  - URA      # Uranium
+
+  # --- Large index mutual funds ---
+  - VFIAX    # Vanguard 500 Index Admiral
+  - FXAIX    # Fidelity 500 Index
+  - VTSAX    # Vanguard Total Stock Market Admiral
+  - SWPPX    # Schwab S&P 500 Index
+
+# ---------------------------------------------------------------------
+#  Advanced (usually leave as-is)
+# ---------------------------------------------------------------------
+settings:
+  history_period: "max"   # how much history to pull for the all-time high
